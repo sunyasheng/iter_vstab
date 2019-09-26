@@ -66,8 +66,9 @@ def build_model(first_img_t, mid_img_t, end_img_t, s_img_t, vgg_data_dict=None, 
                tf.summary.scalar('vgg_out_loss', vgg_out_loss),
                tf.summary.scalar('l1_int_loss', l1_int_loss),
                tf.summary.scalar('l1_out_loss', l1_out_loss)]
-    tot_loss = vgg_int_loss + vgg_out_loss + \
-                l1_int_loss + l1_out_loss
+    # tot_loss = vgg_int_loss + vgg_out_loss + \
+    #             l1_int_loss + l1_out_loss
+    tot_loss = l1_int_loss + l1_out_loss
     return tot_loss, summary
 
 

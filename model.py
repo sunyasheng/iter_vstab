@@ -54,7 +54,7 @@ def resnet_1x1(inputs, training=True, trainable=True, reuse=False, out_size=3):
 
 def u_net(inputs, training=True, trainable=True, out_size=2):
     h = inputs
-    filter_nums = [64, 128, 256, 256]
+    filter_nums = [32, 32, 32, 32]
     # with tf.variable_scope('flow_net_{}'.format(name)):
     mid_feat = []
     for k, n_dim in enumerate(filter_nums):
