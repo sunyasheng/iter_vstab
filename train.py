@@ -31,6 +31,9 @@ per_gpu_batch_size = config.TRAIN.per_gpu_batch_size
 image_input_size = config.TRAIN.image_input_size
 pwc_decay_ratio = config.TRAIN.pwc_decay_ratio
 decay_ratio = config.TRAIN.decay_ratio
+pwc_freeze_epoch = config.TRAIN.pwc_freeze_epoch
+lr_stable_epoch = config.TRAIN.lr_stable_epoch
+pwc_lr_stable_epoch = config.TRAIN.pwc_lr_stable_epoch
 
 timestamp = datetime.datetime.now().strftime("%m-%d-%H:%M")
 
@@ -44,7 +47,7 @@ def build_model(first_img_t, mid_img_t, end_img_t, s_img_t, vgg_data_dict=None, 
 
     assert vgg_data_dict is not None, 'Invalid vgg data dict'
     vgg = Vgg19(vgg_data_dict)
-    img_int, img_out, [warped_first, warped_end] = training_stab_model(first_img_t, s_img_t, end_img_t, mid_img_t)
+    img_int, img_out, [warped_first, warped_end, warped_mid] = training_stab_model(first_img_t, s_img_t, end_img_t, mid_img_t)
 
     int_feat = vgg.relu4_4(img_int)
     out_feat = vgg.relu4_4(img_out)
@@ -56,12 +59,15 @@ def build_model(first_img_t, mid_img_t, end_img_t, s_img_t, vgg_data_dict=None, 
     l1_int_loss = tf.losses.absolute_difference(img_int, s_img_t)
     l1_out_loss = tf.losses.absolute_difference(img_out, s_img_t)
 
-    summary = [tf.summary.image('first_img', first_img_t), tf.summary.image('end_img', end_img_t),
-               tf.summary.image('mid_img', mid_img_t),tf.summary.image('s_img', s_img_t),
-               tf.summary.image('int_img', tf.clip_by_value(img_int, 0, 1)),
-               tf.summary.image('out_img', tf.clip_by_value(img_out, 0, 1)),
+    summary = [tf.summary.image('first_img', first_img_t),
+               tf.summary.image('end_img', end_img_t),
+               tf.summary.image('mid_img', mid_img_t),
+               tf.summary.image('s_img', s_img_t),
                tf.summary.image('warped_first', tf.clip_by_value(warped_first, 0, 1)),
                tf.summary.image('warped_end', tf.clip_by_value(warped_end, 0, 1)),
+               tf.summary.image('warped_mid', tf.clip_by_value(warped_mid, 0, 1)),
+               tf.summary.image('int_img', tf.clip_by_value(img_int, 0, 1)),
+               tf.summary.image('out_img', tf.clip_by_value(img_out, 0, 1)),
                tf.summary.scalar('vgg_int_loss', vgg_int_loss),
                tf.summary.scalar('vgg_out_loss', vgg_out_loss),
                tf.summary.scalar('l1_int_loss', l1_int_loss),
@@ -185,20 +191,30 @@ def train(args):
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
     for epoch in range(0, n_epoch):
-        if epoch < 50:
+        if epoch < pwc_freeze_epoch:
             pwc_lr_init = 0.0
             sess.run(tf.assign(pwc_lr_v, pwc_lr_init)) # freeze the optical flow net
+            log = ' ** pwc net new learning rate: %f ' % (pwc_lr_init)
+            print(log)
 
-        else:
+        if epoch >= pwc_freeze_epoch:
             pwc_lr_init = config.TRAIN.pwc_lr_init
-            cur_lr = linear_lr(pwc_lr_init, pwc_decay_ratio, epoch - 50)
-            sess.run(tf.assign(lr_v, cur_lr))
+            cur_lr = pwc_lr_init
+            sess.run(tf.assign(pwc_lr_v, cur_lr))
             log = ' ** pwc net new learning rate: %f ' % (cur_lr)
             print(log)
 
+        if epoch >= pwc_lr_stable_epoch:
+            pwc_lr_init = config.TRAIN.pwc_lr_init
+            cur_lr = linear_lr(pwc_lr_init, pwc_decay_ratio, epoch - pwc_lr_stable_epoch)
+            sess.run(tf.assign(pwc_lr_v, cur_lr))
+            log = ' ** pwc net new learning rate: %f ' % (cur_lr)
+            print(log)
+
+        if epoch >= lr_stable_epoch:
             lr_init = config.TRAIN.lr_init
-            cur_lr = linear_lr(lr_init, decay_ratio, epoch - 50 )
-            sess.run(tf.assign(cur_lr))
+            cur_lr = linear_lr(lr_init, decay_ratio, epoch - lr_stable_epoch)
+            sess.run(tf.assign(lr_v, cur_lr))
             log = ' ** stab net new learning rate: %f' % (cur_lr)
             print(log)
 

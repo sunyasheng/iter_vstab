@@ -25,9 +25,11 @@ config.TRAIN.pwc_decay_ratio = 0.00000005
 config.TRAIN.len_train = 10431 - 75
 config.TRAIN.gated = True
 config.TRAIN.reg = 0.1
+config.TRAIN.pwc_freeze_epoch = 2
+config.TRAIN.pwc_lr_stable_epoch = config.TRAIN.pwc_freeze_epoch + 2
+config.TRAIN.lr_stable_epoch = 2
 
 config.TRAIN.tf_records_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/projects/iter_vstab/Davis_dataset'
-
 config.TRAIN.vimeo_data_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/datasets/Vimeo90K/vimeo_triplet/tri_trainlist.txt'
 
 config.TRAIN.data_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/davis_dataset/DAVIS/ImageSets/480p/train.txt'

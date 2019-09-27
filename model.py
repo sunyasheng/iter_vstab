@@ -298,7 +298,7 @@ def training_stab_model(img_first, img_s, img_end, img_mid, reuse=False, trainin
 
             # mask1 = (mask1 + 1.0) * 0.5
             # img_out = warped_mid * mask1 + img_int * (1 - mask1)
-    return img_int, img_out, [warped_first, warped_end]
+    return img_int, img_out, [warped_first, warped_end, warped_mid]
 
 def testing_stab_model(first_img, mid_img, end_img, reuse=False, training=True, trainable=True):
     x_tnsr0 = tf.stack([first_img, end_img], axis=1)
@@ -336,7 +336,7 @@ def test_training_model():
                                          tf.placeholder(dtype=tf.float32, shape=[None, None, None, 3]),\
                                          tf.placeholder(dtype=tf.float32, shape=[None, None, None, 3]),\
                                          tf.placeholder(dtype=tf.float32, shape=[None, None, None, 3])
-    img_int, img_out, [warped_first, warped_end] = training_stab_model(img_first, img_s, img_end, img_mid) #img_first, img_s, img_end, img_mid,
+    img_int, img_out, [warped_first, warped_end, warped_mid] = training_stab_model(img_first, img_s, img_end, img_mid) #img_first, img_s, img_end, img_mid,
 
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
     sess.run(tf.global_variables_initializer())
