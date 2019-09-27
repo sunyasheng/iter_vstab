@@ -54,6 +54,8 @@ class RecordReader:
                       lambda: tf.concat([end_img, mid_img, first_img, s_img], axis=2))
         crop_w = config.TRAIN.image_input_size  # + config.TRAIN.image_input_size // 8
         crop_h = crop_w
+        tmp = tmp[config.TRAIN.trans_pix:-config.TRAIN.trans_pix,
+                  config.TRAIN.trans_pix:-config.TRAIN.trans_pix, :]
         tmp = tf.random_crop(tmp, [crop_w, crop_h, 3 * 4])
         tmp = tf.image.random_flip_left_right(tmp)
         tmp = tf.image.random_flip_up_down(tmp)
@@ -61,7 +63,9 @@ class RecordReader:
 
         return tmp[0], tmp[1], tmp[2], tmp[3]
 
-    def run(self):
+    def run(self, out_dir = './tmp_out'):
+        if not os.path.exists(out_dir): os.makedirs(out_dir)
+
         first_img, mid_img, end_img, s_img = self.read_and_decode()
         first_img_t_batch, mid_img_t_batch, end_img_t_batch, s_img_t_batch = tf.train.shuffle_batch(
             [first_img, mid_img, end_img, s_img],
@@ -75,11 +79,13 @@ class RecordReader:
             threads = tf.train.start_queue_runners(coord=coord)
 
             for batch_idx in range(1000):
+                mid_img_path = os.path.join(out_dir, '{}_mid.png'.format(batch_idx))
+                s_img_path = os.path.join(out_dir, '{}_s.png'.format(batch_idx))
                 first_img_np, mid_img_np, end_img_np, s_img_np = sess.run([first_img_t_batch, mid_img_t_batch, end_img_t_batch, s_img_t_batch])
 
                 print(first_img_np.shape)
-                cv2.imwrite('{}_mid.png'.format(batch_idx), mid_img_np[0, :, :, ::-1])
-                cv2.imwrite('{}_s.png'.format(batch_idx), s_img_np[0, :, :, ::-1])
+                cv2.imwrite(mid_img_path, mid_img_np[0, :, :, ::-1])
+                cv2.imwrite(s_img_path, s_img_np[0, :, :, ::-1])
             coord.request_stop()
             coord.join(threads)
             sess.close()

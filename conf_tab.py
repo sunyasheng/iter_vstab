@@ -6,7 +6,7 @@ config.TEST = edict()
 
 config.data_root = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/davis_dataset/DAVIS'
 
-config.TRAIN.lr_init = 0.001
+config.TRAIN.lr_init = 0.0004
 config.TRAIN.pwc_lr_init = 0.000001
 config.TRAIN.beta1 = 0.9
 config.TRAIN.beta2 = 0.999
@@ -24,6 +24,7 @@ config.TRAIN.decay_ratio = 0.00005
 config.TRAIN.pwc_decay_ratio = 0.00000005
 config.TRAIN.len_train = 10431 - 75
 config.TRAIN.gated = True
+config.TRAIN.reg = 0.1
 
 config.TRAIN.tf_records_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/projects/iter_vstab/Davis_dataset'
 

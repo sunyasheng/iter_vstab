@@ -66,9 +66,9 @@ def build_model(first_img_t, mid_img_t, end_img_t, s_img_t, vgg_data_dict=None, 
                tf.summary.scalar('vgg_out_loss', vgg_out_loss),
                tf.summary.scalar('l1_int_loss', l1_int_loss),
                tf.summary.scalar('l1_out_loss', l1_out_loss)]
-    # tot_loss = vgg_int_loss + vgg_out_loss + \
-    #             l1_int_loss + l1_out_loss
-    tot_loss = l1_int_loss + l1_out_loss
+    tot_loss = vgg_int_loss + vgg_out_loss + \
+                l1_int_loss + l1_out_loss
+    # tot_loss = l1_int_loss + l1_out_loss
     return tot_loss, summary
 
 
@@ -177,7 +177,7 @@ def train(args):
     summary_writer = tf.summary.FileWriter(checkpoint_path + lr_str + '/summary', sess.graph)
 
     len_train = config.TRAIN.len_train
-    n_epoch = 200
+    n_epoch = 100
 
     init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
     sess.run(init_op)
@@ -185,19 +185,19 @@ def train(args):
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
     for epoch in range(0, n_epoch):
-        if epoch < 100:
+        if epoch < 50:
             pwc_lr_init = 0.0
             sess.run(tf.assign(pwc_lr_v, pwc_lr_init)) # freeze the optical flow net
 
         else:
             pwc_lr_init = config.TRAIN.pwc_lr_init
-            cur_lr = linear_lr(pwc_lr_init, pwc_decay_ratio, epoch - 100)
+            cur_lr = linear_lr(pwc_lr_init, pwc_decay_ratio, epoch - 50)
             sess.run(tf.assign(lr_v, cur_lr))
             log = ' ** pwc net new learning rate: %f ' % (cur_lr)
             print(log)
 
             lr_init = config.TRAIN.lr_init
-            cur_lr = linear_lr(lr_init, decay_ratio, epoch - 100 )
+            cur_lr = linear_lr(lr_init, decay_ratio, epoch - 50 )
             sess.run(tf.assign(cur_lr))
             log = ' ** stab net new learning rate: %f' % (cur_lr)
             print(log)
