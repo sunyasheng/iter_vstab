@@ -264,12 +264,12 @@ def flow_warp(img_from, flow_pred, reuse=False):
 ## TODO: replace the traditional conv op with gated conv op
 def training_stab_model(img_first, img_s, img_end, img_mid, reuse=False, training=True, trainable=True):
     x_tnsr0 = tf.stack([img_first, img_s], axis=1)
-    flow_pred0, _ = nn(x_tnsr0, reuse=tf.AUTO_REUSE)
+    flow_pred0, _ = nn(x_tnsr0, reuse=False)
     flow_pred0 = flow_pred0[:, :, :, ::-1]
 
 
     x_tnsr2 = tf.stack([img_end, img_s], axis=1)
-    flow_pred2, _ = nn(x_tnsr2, reuse=tf.AUTO_REUSE)
+    flow_pred2, _ = nn(x_tnsr2, reuse=True)
     flow_pred2 = flow_pred2[:, :, :, ::-1]
 
     with tf.variable_scope('stabnet', reuse=tf.AUTO_REUSE):
@@ -281,10 +281,11 @@ def training_stab_model(img_first, img_s, img_end, img_mid, reuse=False, trainin
             # mask = u_net(tf.concat([warped_first, warped_end], axis=-1), training=training, out_size=1)
             # mask = (mask + 1.0) * 0.5
             # img_int = warped_first * mask + warped_end * (1.0 - mask)
+            # img_int = tf.clip_by_value(img_int, 0, 1)
             img_int = make_unet(tf.concat([warped_first, warped_end], axis=-1), training=training, out_size= 3)
 
     x_tnsr1 = tf.stack([img_mid, img_int], axis=1)
-    flow_pred1, _ = nn(x_tnsr1, reuse=tf.AUTO_REUSE)
+    flow_pred1, _ = nn(x_tnsr1, reuse=True)
     flow_pred1 = flow_pred1[:, :, :, ::-1]
 
     with tf.variable_scope('stabnet', reuse=tf.AUTO_REUSE):
@@ -327,7 +328,7 @@ def testing_stab_model(first_img, mid_img, end_img, reuse=False, training=True, 
         with tf.variable_scope('resnet', reuse=tf.AUTO_REUSE):
             # img_out = resnet_1x1(tf.concat([warped_mid, img_int], axis=-1),
             #                      training=training, trainable=trainable, reuse=reuse)
-            img_out = resnet(tf.concat([warped_mid,  img_int]), 5, reuse=reuse, training=training)
+            img_out = resnet(tf.concat([warped_mid,  img_int], axis=-1), 5, reuse=reuse, training=training)
     debug_out = [warped_first, warped_end, img_int]
     return img_out, debug_out
 
@@ -362,9 +363,61 @@ def test_testing_model():
     import pdb; pdb.set_trace();
     print(img_out_np.shape)
 
+def test_flow_warp(img_first, img_s):
+    x_tnsr0 = tf.stack([img_first, img_s], axis=1)
+    flow_pred0, _ = nn(x_tnsr0, reuse=tf.AUTO_REUSE)
+    flow_pred0 = flow_pred0[:, :, :, ::-1]
+    warped = flow_warp(img_first, flow_pred0)
+    return warped
 
 if __name__ == '__main__':
-    test_training_model()
+    import os
+    import cv2
+    from utils import optimistic_restore
+    from pwc_tab import pwc_opt
+    out_dir = './tmp_out'
+    batch_idx = 10
+
+    s_img_path = os.path.join(out_dir, '{}_s.png'.format(batch_idx))
+    first_img_path = os.path.join(out_dir, '{}_first.png'.format(batch_idx))
+    end_img_path = os.path.join(out_dir, '{}_end.png'.format(batch_idx))
+    mid_img_path = os.path.join(out_dir, '{}_mid.png'.format(batch_idx))
+
+    img_first = cv2.imread(first_img_path).astype(np.float32)[:,:,::-1]
+    img_s = cv2.imread(s_img_path).astype(np.float32)[:,:,::-1]
+    img_end = cv2.imread(end_img_path).astype(np.float32)[:, :, ::-1]
+    img_mid = cv2.imread(mid_img_path).astype(np.float32)[:, :, ::-1]
+
+    img_first = img_first / 255.
+    img_s = img_s /255.
+    img_end = img_end / 255.
+    img_mid = img_mid /255.
+
+
+    img_first = np.expand_dims(img_first, 0)
+    img_s = np.expand_dims(img_s, 0)
+    img_mid = np.expand_dims(img_mid, 0)
+    img_end = np.expand_dims(img_end, 0)
+
+    # warped = test_flow_warp(img_first, img_s)
+    img_int, img_out, [warped_first, warped_end, warped_mid] = training_stab_model(img_first,
+                                                                                   img_s, img_end, img_mid, training=False)
+    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+
+    sess.run(tf.global_variables_initializer())
+
+    optimistic_restore(sess, pwc_opt.ckpt_path) #必须放在下面，否则会被覆盖
+
+
+    [warped_first, warped_end] = sess.run([warped_first, warped_end])
+    # import pdb; pdb.set_trace();
+    warped_first = warped_first[0][:,:,::-1]
+    warped_end = warped_end[0][:,:,::-1]
+
+    # warped_np = np.clip(warped_np, 0, 1.)
+    cv2.imwrite('warped_first.png', np.array(warped_first*255).astype(np.uint8))
+    cv2.imwrite('warped_end.png', np.array(warped_end*255).astype(np.uint8))
+    # test_training_model()
     # test_testing_model()
     # input_tensor_batch = tf.random_uniform(shape=[2, 16, 16, 3])
     # # out = resnet(input_tensor_batch, 5)

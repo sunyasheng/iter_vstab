@@ -78,14 +78,22 @@ class RecordReader:
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(coord=coord)
 
-            for batch_idx in range(1000):
+            for batch_idx in range(20):
                 mid_img_path = os.path.join(out_dir, '{}_mid.png'.format(batch_idx))
                 s_img_path = os.path.join(out_dir, '{}_s.png'.format(batch_idx))
-                first_img_np, mid_img_np, end_img_np, s_img_np = sess.run([first_img_t_batch, mid_img_t_batch, end_img_t_batch, s_img_t_batch])
+                first_img_path = os.path.join(out_dir, '{}_first.png'.format(batch_idx))
+                end_img_path = os.path.join(out_dir, '{}_end.png'.format(batch_idx))
 
+                first_img_np, mid_img_np, end_img_np, s_img_np = sess.run([first_img_t_batch,
+                                                                           mid_img_t_batch,
+                                                                           end_img_t_batch,
+                                                                           s_img_t_batch])
                 print(first_img_np.shape)
                 cv2.imwrite(mid_img_path, mid_img_np[0, :, :, ::-1])
                 cv2.imwrite(s_img_path, s_img_np[0, :, :, ::-1])
+                cv2.imwrite(first_img_path, first_img_np[0, :, :, ::-1])
+                cv2.imwrite(end_img_path, end_img_np[0, :, :, ::-1])
+
             coord.request_stop()
             coord.join(threads)
             sess.close()

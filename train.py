@@ -74,6 +74,7 @@ def build_model(first_img_t, mid_img_t, end_img_t, s_img_t, vgg_data_dict=None, 
                tf.summary.scalar('l1_out_loss', l1_out_loss)]
     tot_loss = vgg_int_loss + vgg_out_loss + \
                 l1_int_loss + l1_out_loss
+    # tot_loss = vgg_int_loss + l1_int_loss
     # tot_loss = l1_int_loss + l1_out_loss
     return tot_loss, summary
 
@@ -167,14 +168,13 @@ def train(args):
     if debug:
         sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 
-    sess.run(tf.global_variables_initializer())
+    # sess.run(tf.global_variables_initializer())
 
     saver = tf.train.Saver(max_to_keep=200)
     lr_str = timestamp + ' ' + get_config(config) + ',gn:{}'.format(num_gpu)
     if not os.path.exists(checkpoint_path + lr_str):
         os.makedirs(checkpoint_path + lr_str)
 
-    optimistic_restore(sess, pwc_opt.ckpt_path)
     if args.pretrained:
         print('restore path from : ', checkpoint_path + args.lr_str + '/stab.ckpt-' + str(args.modeli))
         saver.restore(sess, checkpoint_path + args.lr_str + '/stab.ckpt-' + str(args.modeli))
@@ -189,6 +189,7 @@ def train(args):
     sess.run(init_op)
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+    optimistic_restore(sess, pwc_opt.ckpt_path)
 
     for epoch in range(0, n_epoch):
         if epoch < pwc_freeze_epoch:
@@ -317,11 +318,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--mode', type=str, default='train', help='train, evaluate, test, export, psnr')
-    parser.add_argument('--pretrained',type=bool, default=False,help='False, True')
+    parser.add_argument('--pretrained',type=bool, default=True,help='False, True')
     parser.add_argument('--resize', type=bool, default=False, help='False, True, resize the img or pad the img')
     parser.add_argument('--loss_type', type=str, default='pixel_wise', help='feature_reconstruct, pixel_wise')
     parser.add_argument('--seed', type=int, default=66, help='a random seed')
-    parser.add_argument('--lr_str', type=str, default='09-26-16:06 bn:True,opt:Adam,bs:8,ims:256,lr:0.001,gt:True,ks:3,gn:1',
+    parser.add_argument('--lr_str', type=str, default='09-28-12:33 bn:True,opt:Adam,bs:8,ims:256,lr:0.001,gt:True,ks:3,gn:1',
                         help='checkpoint path')
     parser.add_argument('--modeli', type=int, default=-1, help='loaded model version')
     parser.add_argument('--out_dir', type=str, default='./test_out/examples_5_out', help='output path of the resulting video, either as a single file or as a folder')
@@ -336,8 +337,8 @@ if __name__ == '__main__':
     np.random.seed(args.seed)
 
     if args.mode == 'train':
-        args.modeli = 1000
+        args.modeli = 4000
         train(args)
     if args.mode == 'evaluate':
-        args.modeli = 7000
+        args.modeli = 73000
         stabilize(args)

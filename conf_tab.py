@@ -6,7 +6,7 @@ config.TEST = edict()
 
 config.data_root = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/davis_dataset/DAVIS'
 
-config.TRAIN.lr_init = 0.0004
+config.TRAIN.lr_init = 0.001
 config.TRAIN.pwc_lr_init = 0.000001
 config.TRAIN.beta1 = 0.9
 config.TRAIN.beta2 = 0.999
@@ -20,14 +20,14 @@ config.TRAIN.per_gpu_batch_size = 8
 config.TRAIN.image_input_size = 256
 config.TRAIN.batch_norm = True
 config.TRAIN.kernel_size = 3
-config.TRAIN.decay_ratio = 0.00005
-config.TRAIN.pwc_decay_ratio = 0.00000005
+config.TRAIN.decay_ratio = 0.00001
+config.TRAIN.pwc_decay_ratio = 0.00000001
 config.TRAIN.len_train = 10431 - 75
 config.TRAIN.gated = True
 config.TRAIN.reg = 0.1
-config.TRAIN.pwc_freeze_epoch = 2
-config.TRAIN.pwc_lr_stable_epoch = config.TRAIN.pwc_freeze_epoch + 2
-config.TRAIN.lr_stable_epoch = 2
+config.TRAIN.pwc_freeze_epoch = 25
+config.TRAIN.pwc_lr_stable_epoch = config.TRAIN.pwc_freeze_epoch + 25
+config.TRAIN.lr_stable_epoch = 25
 
 config.TRAIN.tf_records_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/projects/iter_vstab/Davis_dataset'
 config.TRAIN.vimeo_data_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/datasets/Vimeo90K/vimeo_triplet/tri_trainlist.txt'
