@@ -235,9 +235,11 @@ def u_net(inputs, training=True, trainable=True, out_size=2):
     # with tf.variable_scope('flow_net_{}'.format(name)):
     mid_feat = []
     for k, n_dim in enumerate(filter_nums):
-        h = conv2d_padding_same(h, n_dim, activate=None, trainable=trainable)
+        # h = conv2d_padding_same(h, n_dim, activate=None, trainable=trainable)
+        # h = batchnorm(h, training)
+        # h = tf.nn.relu(h)
         h = batchnorm(h, training)
-        h = tf.nn.relu(h)
+        h = conv2d_padding_same(h, n_dim, activate=tf.nn.relu, trainable=trainable)
         if k != len(filter_nums) - 1:
             mid_feat.append(h)
             h = maxpool2d_same(h)
@@ -282,7 +284,7 @@ def training_stab_model(img_first, img_s, img_end, img_mid, reuse=False, trainin
             # mask = (mask + 1.0) * 0.5
             # img_int = warped_first * mask + warped_end * (1.0 - mask)
             # img_int = tf.clip_by_value(img_int, 0, 1)
-            img_int = make_unet(tf.concat([warped_first, warped_end], axis=-1), training=training, out_size= 3)
+            img_int = u_net(tf.concat([warped_first, warped_end], axis=-1), training=training, out_size= 3)
 
     x_tnsr1 = tf.stack([img_mid, img_int], axis=1)
     flow_pred1, _ = nn(x_tnsr1, reuse=True)

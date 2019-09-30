@@ -103,7 +103,7 @@ def train(args):
     first_img_t_batch, mid_img_t_batch, end_img_t_batch, s_img_t_batch = tf.train.shuffle_batch(
         [first_img_t, mid_img_t, end_img_t, s_img_t],
         batch_size=batch_size, capacity=12000,
-        min_after_dequeue=80, num_threads=8)
+        min_after_dequeue=160, num_threads=4)
 
     reuse_all = False
 
@@ -331,7 +331,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--mode', type=str, default='train', help='train, evaluate, test, export, psnr')
-    parser.add_argument('--pretrained',type=bool, default=True,help='False, True')
+    parser.add_argument('--pretrained',type=bool, default=False,help='False, True')
     parser.add_argument('--resize', type=bool, default=False, help='False, True, resize the img or pad the img')
     parser.add_argument('--loss_type', type=str, default='pixel_wise', help='feature_reconstruct, pixel_wise')
     parser.add_argument('--debug', type=bool, default=False, help='False, True, debug or not')
