@@ -5,6 +5,16 @@ import tensorflow as tf
 import cv2
 import numpy as np
 from conf_tab import config
+import cvbase as cvb
+
+def write_flows(flow_lists, index, debug_out_dir):
+    if not os.path.exists(debug_out_dir):
+        os.makedirs(debug_out_dir)
+    for key, flow in flow_lists.items():
+        flow_img = cvb.flow2rgb(flow)
+        # import pdb; pdb.set_trace();
+        fn = os.path.join(debug_out_dir, '{}_{}.png'.format(index, key))
+        cv2.imwrite(fn, np.array(flow_img*255.0).astype(np.uint8))
 
 def write_imgs(img_lists, index, debug_out_dir):
     if not os.path.exists(debug_out_dir):

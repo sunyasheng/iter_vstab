@@ -329,7 +329,7 @@ def testing_stab_model(first_img, mid_img, end_img, reuse=False, training=True, 
             # img_out = resnet_1x1(tf.concat([warped_mid, img_int], axis=-1),
             #                      training=training, trainable=trainable, reuse=reuse)
             img_out = resnet(tf.concat([warped_mid,  img_int], axis=-1), 5, reuse=reuse, training=training)
-    debug_out = [warped_first, warped_end, img_int]
+    debug_out = [warped_first, warped_end, img_int, flow_pred0, flow_pred1, flow_pred2]
     return img_out, debug_out
 
 def test_training_model():

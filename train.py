@@ -13,7 +13,7 @@ import cv2
 from pwc_tab import pwc_opt
 from utils import video2triplets, optimistic_restore, get_config, pad_img, unpad_img
 from utils import get_variables_with_name, average_gradients, get_available_gpus, params_count
-from utils import save_img_lists, linear_lr, write_imgs
+from utils import save_img_lists, linear_lr, write_imgs, write_flows
 from get_data_mini_after import RecordReader
 from PIL import Image
 ckpt_path = '../tfoptflow/tfoptflow/models/pwcnet-lg-6-2-multisteps-chairsthingsmix/pwcnet.ckpt-595000'
@@ -300,7 +300,13 @@ def stabilize(args):
                 debug_img_lists_k = ['first_img', 'cur_img', 'end_img', 'out_img']
                 debug_img_lists_v = [first_img[:,:,::-1], cur_img[:,:,::-1], end_img[:,:,::-1], out_img[:,:,::-1]]
                 debug_img_lists = dict(zip(debug_img_lists_k, debug_img_lists_v))
-                write_imgs(debug_img_lists, k, args.debug_out_dir)
+                # write_imgs(debug_img_lists, k, args.debug_out_dir)
+
+                [warped_first, warped_end, img_int, flow_pred0, flow_pred1, flow_pred2] = debug_out
+                debug_flow_lists_k = ['first2end_flow', 'end2first_flow', 'mid2int_flow']
+                debug_flow_lists_v = [flow_pred0[0], flow_pred2[0], flow_pred1[0]]
+                debug_flow_lists = dict(zip(debug_flow_lists_k, debug_flow_lists_v))
+                write_flows(debug_flow_lists, k, args.debug_out_dir)
 
         for k in range(len(img_lists)-args.skip, len(img_lists)):
             next_img_lists.append(img_lists[k])
@@ -339,6 +345,10 @@ if __name__ == '__main__':
     parser.add_argument('--stab_iter', type=int, default=5, help='stab iter')
     parser.add_argument('--debug_out_dir', type=str, default='debug_out_dir', help='debug_out_dir')
     args = parser.parse_args()
+
+    if args.debug:
+        args.stab_iter = 1
+
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
     tf.random.set_random_seed(args.seed)
