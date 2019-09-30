@@ -183,7 +183,7 @@ def train(args):
     summary_writer = tf.summary.FileWriter(checkpoint_path + lr_str + '/summary', sess.graph)
 
     len_train = config.TRAIN.len_train
-    n_epoch = 100
+    n_epoch = 250
 
     init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
     sess.run(init_op)

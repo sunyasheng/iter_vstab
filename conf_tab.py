@@ -20,13 +20,13 @@ config.TRAIN.per_gpu_batch_size = 10
 config.TRAIN.image_input_size = 256
 config.TRAIN.batch_norm = True
 config.TRAIN.kernel_size = 3
-config.TRAIN.decay_ratio = 0.00001
-config.TRAIN.pwc_decay_ratio = 0.00000001
+config.TRAIN.decay_ratio = 0.0000025
+config.TRAIN.pwc_decay_ratio = 0.0000000025
 config.TRAIN.len_train = 10431 - 75
 config.TRAIN.gated = True
 config.TRAIN.reg = 0.1
 config.TRAIN.pwc_freeze_epoch = 25
-config.TRAIN.pwc_lr_stable_epoch = config.TRAIN.pwc_freeze_epoch + 25
+config.TRAIN.pwc_lr_stable_epoch = config.TRAIN.pwc_freeze_epoch + 50
 config.TRAIN.lr_stable_epoch = 25
 
 config.TRAIN.tf_records_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/projects/iter_vstab/Davis_dataset'

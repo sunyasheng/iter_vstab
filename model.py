@@ -235,9 +235,6 @@ def u_net(inputs, training=True, trainable=True, out_size=2):
     # with tf.variable_scope('flow_net_{}'.format(name)):
     mid_feat = []
     for k, n_dim in enumerate(filter_nums):
-        # h = conv2d_padding_same(h, n_dim, activate=None, trainable=trainable)
-        # h = batchnorm(h, training)
-        # h = tf.nn.relu(h)
         h = batchnorm(h, training)
         h = conv2d_padding_same(h, n_dim, activate=tf.nn.relu, trainable=trainable)
         if k != len(filter_nums) - 1:
@@ -245,10 +242,10 @@ def u_net(inputs, training=True, trainable=True, out_size=2):
             h = maxpool2d_same(h)
 
     for n_dim, pre_f in zip(filter_nums[:-1][::-1], mid_feat[::-1]):
-        h = batchnorm(h, training)
         shape_f = tf.shape(pre_f)
         h = tf.image.resize_bilinear(h, (shape_f[1], shape_f[2]))
         h = tf.concat([h, pre_f], axis=-1)
+        h = batchnorm(h, training)
         h = conv2d_padding_same(h, n_dim, activate=tf.nn.relu, trainable=trainable)
 
     h = batchnorm(h, training)
