@@ -6,6 +6,13 @@ import cv2
 import numpy as np
 from conf_tab import config
 
+def write_imgs(img_lists, index, debug_out_dir):
+    if not os.path.exists(debug_out_dir):
+        os.makedirs(debug_out_dir)
+    for i, img in img_lists.items():
+        fn = os.path.join(debug_out_dir, '{}_{}.png'.format(index, i))
+        cv2.imwrite(fn, img)
+
 def linear_lr(lr_init, decay_ratio, cur_epoches):
     res_lr = lr_init - decay_ratio*cur_epoches
     return res_lr

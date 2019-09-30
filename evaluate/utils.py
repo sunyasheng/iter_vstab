@@ -7,7 +7,7 @@ import math
 
 def read_img_lists(video_path):
     # print(video_path)
-    img_paths = glob.glob(os.path.join(video_path, '*.png'))
+    img_paths = sorted(glob.glob(os.path.join(video_path, '*.png')))
     # print(img_paths)
     res_imgs = []
     for i in range(len(img_paths)):

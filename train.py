@@ -13,7 +13,7 @@ import cv2
 from pwc_tab import pwc_opt
 from utils import video2triplets, optimistic_restore, get_config, pad_img, unpad_img
 from utils import get_variables_with_name, average_gradients, get_available_gpus, params_count
-from utils import save_img_lists, linear_lr
+from utils import save_img_lists, linear_lr, write_imgs
 from get_data_mini_after import RecordReader
 from PIL import Image
 ckpt_path = '../tfoptflow/tfoptflow/models/pwcnet-lg-6-2-multisteps-chairsthingsmix/pwcnet.ckpt-595000'
@@ -252,12 +252,14 @@ def build_model_test(first_img, mid_img, end_img, training=True, trainable=True)
 def stabilize(args):
     # args.resize = True
     print("reading images")
-    if args.img_dir[-4:] == '.mp4':
+    if args.img_dir[-4:] == '.mp4' or args.img_dir[-4:] == '.avi':
         from utils import vid2img_lists
         img_lists = vid2img_lists(args.img_dir)
     else:
         from utils import file2lists
         img_lists = file2lists(os.path.join(args.img_dir, 'img_lists.txt'))
+        img_lists = [item_i for item_i in img_lists if item_i[-3:] == 'png']
+        img_lists = sorted(img_lists)
         img_lists = [os.path.join(args.img_dir, item_i) for item_i in img_lists]
         img_lists = [cv2.imread(fn)[:,:,::-1] for fn in img_lists]
     raw_shape = img_lists[0].shape
@@ -273,7 +275,7 @@ def stabilize(args):
 
     out_img_ts, debug_out_ts = build_model_test(first_img_p, mid_img_p, end_img_p, training=False, trainable=True)
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
-    sess.run(tf.global_variables_initializer())
+    # sess.run(tf.global_variables_initializer())
 
     saver = tf.train.Saver()
     saver.restore(sess, checkpoint_path + args.lr_str + '/stab.ckpt-' + str(args.modeli))
@@ -292,9 +294,14 @@ def stabilize(args):
                                                       end_img_p: end_img_})
             out_img = out_img.squeeze()
             out_img = np.array(out_img*255.0).astype(np.uint8)
-            # cv2.imwrite('out_img.png', out_img)
-            # import pdb; pdb.set_trace();
             next_img_lists.append(out_img)
+
+            if args.debug:
+                debug_img_lists_k = ['first_img', 'cur_img', 'end_img', 'out_img']
+                debug_img_lists_v = [first_img[:,:,::-1], cur_img[:,:,::-1], end_img[:,:,::-1], out_img[:,:,::-1]]
+                debug_img_lists = dict(zip(debug_img_lists_k, debug_img_lists_v))
+                write_imgs(debug_img_lists, k, args.debug_out_dir)
+
         for k in range(len(img_lists)-args.skip, len(img_lists)):
             next_img_lists.append(img_lists[k])
         img_lists = next_img_lists
@@ -321,6 +328,7 @@ if __name__ == '__main__':
     parser.add_argument('--pretrained',type=bool, default=True,help='False, True')
     parser.add_argument('--resize', type=bool, default=False, help='False, True, resize the img or pad the img')
     parser.add_argument('--loss_type', type=str, default='pixel_wise', help='feature_reconstruct, pixel_wise')
+    parser.add_argument('--debug', type=bool, default=False, help='False, True, debug or not')
     parser.add_argument('--seed', type=int, default=66, help='a random seed')
     parser.add_argument('--lr_str', type=str, default='09-28-12:33 bn:True,opt:Adam,bs:8,ims:256,lr:0.001,gt:True,ks:3,gn:1',
                         help='checkpoint path')
@@ -329,7 +337,7 @@ if __name__ == '__main__':
     parser.add_argument('--img_dir', type=str, default='./test_in/examples_5', help='input image path')
     parser.add_argument('--skip', type=int, default=2, help='skip step')
     parser.add_argument('--stab_iter', type=int, default=5, help='stab iter')
-
+    parser.add_argument('--debug_out_dir', type=str, default='debug_out_dir', help='debug_out_dir')
     args = parser.parse_args()
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -340,5 +348,5 @@ if __name__ == '__main__':
         args.modeli = 4000
         train(args)
     if args.mode == 'evaluate':
-        args.modeli = 73000
+        args.modeli = 129000
         stabilize(args)
