@@ -72,13 +72,13 @@ class RecordWriter:
 
 
 if __name__ == '__main__':
-    dir_name = '/Users/yashengsun/Downloads/DAVIS'
-    dir_name1 = '/Users/yashengsun/Downloads/DAVIS1'
-    dir_name2 = '/Users/yashengsun/Downloads/DAVIS2'
+    dir_name = '/xxx/Downloads/DAVIS'
+    dir_name1 = '/xxx/Downloads/DAVIS1'
+    dir_name2 = '/xxx/Downloads/DAVIS2'
     dir_names = [dir_name, dir_name1, dir_name2]
-    dir_names = ['/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/Davis/DAVIS',
-                 '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/Davis/DAVIS_test_challenge',
-                 '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/Davis/DAVIS_trainval']
+    dir_names = ['/xxx/Davis/DAVIS',
+                 '/xxx/Davis/DAVIS_test_challenge',
+                 '/xxx/Davis/DAVIS_trainval']
     writer = RecordWriter(out_dir='../Davis_dataset/', in_dirs=dir_names)
     pass
 
