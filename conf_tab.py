@@ -4,13 +4,12 @@ config = edict()
 config.TRAIN = edict()
 config.TEST = edict()
 
-config.data_root = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/davis_dataset/DAVIS'
+config.data_root = '/xxx/sunyasheng/davis_dataset/DAVIS'
 
 config.TRAIN.lr_init = 0.001
 config.TRAIN.pwc_lr_init = 0.000001
 config.TRAIN.beta1 = 0.9
 config.TRAIN.beta2 = 0.999
-# config.TRAIN.pretrained_vgg_path = '/mnt/cephfs/arnold/sunyasheng/arnold_projects/sepconv-tensorflow/pretrained_vgg/vgg_19.ckpt'
 config.TRAIN.lr_decay = 0.1
 config.TRAIN.checkpoint_path = './checkpoints/stab_checkpoints/'
 # config.TRAIN.loss_type = 'pixel_wise'
@@ -29,13 +28,13 @@ config.TRAIN.pwc_freeze_epoch = 25
 config.TRAIN.pwc_lr_stable_epoch = config.TRAIN.pwc_freeze_epoch + 50
 config.TRAIN.lr_stable_epoch = 25
 
-config.TRAIN.tf_records_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/projects/iter_vstab/Davis_dataset'
-config.TRAIN.vimeo_data_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/datasets/Vimeo90K/vimeo_triplet/tri_trainlist.txt'
+config.TRAIN.tf_records_path = '/xxx/sunyasheng/projects/iter_vstab/Davis_dataset'
+config.TRAIN.vimeo_data_path = '/xxx/sunyasheng/datasets/Vimeo90K/vimeo_triplet/tri_trainlist.txt'
 
-config.TRAIN.data_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/davis_dataset/DAVIS/ImageSets/480p/train.txt'
+config.TRAIN.data_path = '/xxx/sunyasheng/davis_dataset/DAVIS/ImageSets/480p/train.txt'
 config.TRAIN.vgg19_npy_path = './pretrained_vgg19/vgg19.npy'
 
-config.TEST.data_path = '/mnt/cephfs_new_wj/lab_ad_idea/sunyasheng/davis_dataset/DAVIS/ImageSets/480p/val.txt'
+config.TEST.data_path = '/xxx/sunyasheng/davis_dataset/DAVIS/ImageSets/480p/val.txt'
 config.TEST.res_dir = './checkpoints/stab_checkpoints/test_res/'
 config.DEBUG = False
 
